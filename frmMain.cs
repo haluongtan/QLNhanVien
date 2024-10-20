@@ -200,34 +200,6 @@ namespace QLNhanVien
             }
         }
 
-        private void toolStripPhongBan_Click(object sender, EventArgs e)
-        {
-            frmPhongBan PhongBan = new frmPhongBan();
-            PhongBan.ShowDialog();  
-        }
 
-        private void chứcVụToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            frmChucVu ChucVu = new frmChucVu();
-            ChucVu.ShowDialog();
-        }
-
-        private void hợpĐồngToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            frmHopDong HopDong = new frmHopDong();
-            HopDong.ShowDialog();
-        }
-
-        private void toolStripQuanLyLuong_Click(object sender, EventArgs e)
-        {
-            frmQuanLyLuong quanLyLuong = new frmQuanLyLuong(); 
-            quanLyLuong.ShowDialog();
-        }
-
-        private void toolStripQuanLyChamCong_Click(object sender, EventArgs e)
-        {
-            frmChamCong quanLyChamCong = new frmChamCong();
-            quanLyChamCong.ShowDialog();
-        }
     }
 }

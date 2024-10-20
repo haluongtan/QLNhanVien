@@ -64,7 +64,9 @@ namespace QLNhanVien
             OpenChildForm(chamCong);
         }
 
-   
+        private void frmQuanLyNhanSu_Load(object sender, EventArgs e)
+        {
 
+        }
     }
 }

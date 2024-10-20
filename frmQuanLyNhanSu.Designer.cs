@@ -122,6 +122,7 @@
             this.IsMdiContainer = true;
             this.Name = "frmQuanLyNhanSu";
             this.Text = "Quản lý nhân sự";
+            this.Load += new System.EventHandler(this.frmQuanLyNhanSu_Load);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
