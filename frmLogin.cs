@@ -1,4 +1,6 @@
-﻿using System;
+using BUS;
+using QLNhanVien;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -8,13 +10,17 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace QLNhanVien
+namespace QuanLyNhanSu
 {
     public partial class frmLogin : Form
     {
+        private UserBUS userBUS;
+
         public frmLogin()
         {
             InitializeComponent();
+            userBUS = new UserBUS();
+
         }
 
         private void frmLogin_Load(object sender, EventArgs e)
@@ -24,42 +30,36 @@ namespace QLNhanVien
 
         private void btnDangNhap_Click(object sender, EventArgs e)
         {
-            string username = txtTenTK.Text;
-            string password = txtMK.Text;
+            string username = txtTenTK.Text.Trim();
+            string password = txtMK.Text.Trim();
 
-            using (var dbContext = new Model1())
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
             {
-                // Tìm người dùng theo username và password
-                var user = dbContext.Users
-                    .FirstOrDefault(u => u.Username == username && u.Password == password);
+                MessageBox.Show("Vui lòng nhập tên tài khoản và mật khẩu.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
-                if (user != null)
+            var user = userBUS.CheckUserLogin(username, password);
+
+            if (user != null)
+            {
+                if (user.Role == "admin")
                 {
-                    // Kiểm tra loại tài khoản
-                    if (user.Role == "admin")
-                    {
-                        MessageBox.Show("Đăng nhập thành công với quyền Admin.");
-
-                        // Mở form quản lý nhân sự với quyền admin
-                        frmQuanLyNhanSu frmAdmin = new frmQuanLyNhanSu();
-                        frmAdmin.Show();
-                        this.Hide();  // Ẩn form đăng nhập
-                    }
-                    else if (user.Role == "nhanvien")
-                    {
-                        MessageBox.Show("Đăng nhập thành công với quyền Nhân viên.");
-
-                        // Mở form chấm công với quyền hạn của nhân viên (chỉ xem)
-                        frmChamCong frmNhanVien = new frmChamCong();
-                        frmNhanVien.ApplyRoleRestrictions("nhanvien"); // Gọi hàm áp dụng quyền chỉ xem cho nhân viên
-                        frmNhanVien.Show();
-                        this.Hide();  // Ẩn form đăng nhập
-                    }
+                    frmQuanLyNhanSu frmAdmin = new frmQuanLyNhanSu();
+                    frmAdmin.Show();
+                    this.Hide();
                 }
-                else
+                else if (user.Role == "nhanvien")
                 {
-                    MessageBox.Show("Sai tài khoản hoặc mật khẩu.");
+                    frmChamCong frmNhanVien = new frmChamCong();
+                    frmNhanVien.ApplyRoleRestrictions("nhanvien");
+                    frmNhanVien.Show();
+                    this.Hide();
                 }
+            }
+            else
+            {
+                MessageBox.Show("Sai tên tài khoản hoặc mật khẩu.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
