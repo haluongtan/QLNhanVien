@@ -1,4 +1,5 @@
-﻿using System;
+using BUS;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -12,9 +13,13 @@ namespace QLNhanVien
 {
     public partial class frmQuanLyLuong : Form
     {
+        private LuongBUS luongBUS;
+
         public frmQuanLyLuong()
         {
             InitializeComponent();
+            luongBUS = new LuongBUS();
+
         }
 
         private void frmQuanLyLuong_Load(object sender, EventArgs e)
@@ -24,26 +29,18 @@ namespace QLNhanVien
         }
         public void LoadLuongData()
         {
-            using (var dbContext = new Model1())
+            var nhanVienData = luongBUS.LayDanhSachNhanVienChuaCoLuong();
+            if (nhanVienData == null || !nhanVienData.Any())
             {
-                // Lấy dữ liệu bảng Luong và liên kết với bảng NhanVien để thêm cột TenNhanVien
-                var luongData = (from l in dbContext.Luong
-                                 join nv in dbContext.NhanVien on l.MaNhanVien equals nv.MaNhanVien
-                                 select new
-                                 {
-                                     l.MaLuong,
-                                     l.MaNhanVien,
-                                     TenNhanVien = nv.HoTen,
-                                     l.LuongCoBan,
-                                     l.PhuCap,
-                                     l.Thang,
-                                     l.Nam
-                                 }).ToList();
+                MessageBox.Show("Không có dữ liệu nhân viên để hiển thị.");
+                return;
+            }
 
-                // Hiển thị dữ liệu lên DataGridView
-                dgvLuong.DataSource = luongData;
+            dgvLuong.DataSource = nhanVienData;
 
-                // Đặt tên cho các cột hiển thị
+            // Cài đặt lại header text của các cột nếu dữ liệu đã có
+            if (dgvLuong.Columns.Contains("MaNhanVien"))
+            {
                 dgvLuong.Columns["MaLuong"].HeaderText = "Mã Lương";
                 dgvLuong.Columns["MaNhanVien"].HeaderText = "Mã Nhân Viên";
                 dgvLuong.Columns["TenNhanVien"].HeaderText = "Tên Nhân Viên";
@@ -51,11 +48,11 @@ namespace QLNhanVien
                 dgvLuong.Columns["PhuCap"].HeaderText = "Phụ Cấp";
                 dgvLuong.Columns["Thang"].HeaderText = "Tháng";
                 dgvLuong.Columns["Nam"].HeaderText = "Năm";
-
-                // Tùy chọn căn chỉnh kích thước cột
-                dgvLuong.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             }
+
+            dgvLuong.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         }
+
 
         private void dgvLuong_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -106,46 +103,28 @@ namespace QLNhanVien
 
         private void btnXoaLuong_Click(object sender, EventArgs e)
         {
-            if (dgvLuong.CurrentRow != null && dgvLuong.CurrentRow.Index >= 0)
+            if (dgvLuong.CurrentRow != null)
             {
-                // Lấy mã nhân viên và mã lương từ hàng đã chọn
                 int maLuong = Convert.ToInt32(dgvLuong.CurrentRow.Cells["MaLuong"].Value);
-                int maNhanVien = Convert.ToInt32(dgvLuong.CurrentRow.Cells["MaNhanVien"].Value);
-
-                // Hiển thị thông báo xác nhận xóa
-                DialogResult result = MessageBox.Show("Bạn có chắc muốn xóa lương của nhân viên này không?", "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                DialogResult result = MessageBox.Show("Bạn có chắc muốn xóa lương của nhân viên này không?", "Xác nhận xóa", MessageBoxButtons.YesNo);
 
                 if (result == DialogResult.Yes)
                 {
-                    // Tiến hành xóa trong cơ sở dữ liệu
-                    using (var dbContext = new Model1())
-                    {
-                        // Tìm bản ghi lương cần xóa
-                        var luongToDelete = dbContext.Luong.FirstOrDefault(l => l.MaLuong == maLuong);
-
-                        if (luongToDelete != null)
-                        {
-                            // Xóa bản ghi
-                            dbContext.Luong.Remove(luongToDelete);
-                            dbContext.SaveChanges();
-
-                            // Tải lại dữ liệu sau khi xóa
-                            LoadLuongData();
-
-                            MessageBox.Show("Đã xóa thành công lương của nhân viên.", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        }
-                        else
-                        {
-                            MessageBox.Show("Không tìm thấy lương của nhân viên này.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-                    }
+                    luongBUS.XoaLuong(maLuong);
+                    LoadLuongData();
+                    MessageBox.Show("Đã xóa thành công lương của nhân viên.", "Thành công");
                 }
             }
             else
             {
-                MessageBox.Show("Vui lòng chọn một nhân viên để xóa lương.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Vui lòng chọn một nhân viên để xóa lương.", "Lỗi");
             }
 
+        }
+
+        private void btnThoat_Click(object sender, EventArgs e)
+        {
+            this.Close  ();
         }
     }
 }
