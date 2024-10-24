@@ -1,4 +1,6 @@
-﻿using System;
+using BUS;
+using DAL.Entities;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -13,17 +15,19 @@ namespace QLNhanVien
 {
     public partial class frmChamCong : Form
     {
-        private NhanVien NhanVien;
+        private ChamCongBUS chamCongBUS;
 
         public frmChamCong()
         {
             InitializeComponent();
+            chamCongBUS = new ChamCongBUS();
+
         }
 
         private void frmChamCong_Load(object sender, EventArgs e)
         {
             SetupDataGridView();
- 
+            LoadChamCongData();
         }
         public void AddNhanVienToChamCong(int maNhanVien, string tenNhanVien)
         {
@@ -32,44 +36,37 @@ namespace QLNhanVien
         }
         private void SetupDataGridView()
         {
-            // Tạo các cột cho DataGridView
-            DataGridViewTextBoxColumn maNhanVienColumn = new DataGridViewTextBoxColumn();
-            maNhanVienColumn.HeaderText = "Mã Nhân Viên";
-            maNhanVienColumn.Name = "MaNhanVien"; // Tên để truy xuất dữ liệu
-
-            DataGridViewTextBoxColumn tenNhanVienColumn = new DataGridViewTextBoxColumn();
-            tenNhanVienColumn.HeaderText = "Tên Nhân Viên";
-            tenNhanVienColumn.Name = "TenNhanVien";
-
-            DataGridViewComboBoxColumn tinhTrangColumn = new DataGridViewComboBoxColumn();
-            tinhTrangColumn.HeaderText = "Tình Trạng";
-            tinhTrangColumn.Name = "TinhTrang";
+            dgvChamCong.Columns.Clear();
+            dgvChamCong.Columns.Add("MaNhanVien", "Mã Nhân Viên");
+            dgvChamCong.Columns.Add("TenNhanVien", "Tên Nhân Viên");
+            DataGridViewComboBoxColumn tinhTrangColumn = new DataGridViewComboBoxColumn
+            {
+                HeaderText = "Tình Trạng",
+                Name = "TinhTrang"
+            };
             tinhTrangColumn.Items.AddRange("Đi Làm", "Nghỉ Phép", "Đi Trễ", "Không Đi Làm");
-
-            dgvChamCong.Columns.Add(maNhanVienColumn);
-            dgvChamCong.Columns.Add(tenNhanVienColumn);
             dgvChamCong.Columns.Add(tinhTrangColumn);
-
-            // Đặt AutoSize cho DataGridView để phù hợp với nội dung
             dgvChamCong.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         }
         private void LoadChamCongData()
         {
-            using (var dbContext = new Model1())
-            {
-                // Lấy danh sách nhân viên chưa có chấm công
-                var nhanVienList = dbContext.NhanVien.Select(nv => new
-                {
-                    nv.MaNhanVien,
-                    nv.HoTen,
-                    TinhTrang = "Đi Làm" // Giá trị mặc định cho Tình Trạng
-                }).ToList();
+            DateTime selectedDate = dtpNgay.Value.Date;
+            var chamCongList = chamCongBUS.LayDanhSachChamCongTheoNgay(selectedDate);
+            dgvChamCong.Rows.Clear();
 
-                // Gán danh sách nhân viên vào DataGridView
-                dgvChamCong.Rows.Clear(); // Xóa tất cả hàng trước khi thêm mới
+            if (chamCongList.Count > 0)
+            {
+                foreach (var chamCong in chamCongList)
+                {
+                    dgvChamCong.Rows.Add(chamCong.MaNhanVien, chamCong.TenNhanVien, chamCong.TrangThai);
+                }
+            }
+            else
+            {
+                var nhanVienList = chamCongBUS.LayDanhSachNhanVien();
                 foreach (var nv in nhanVienList)
                 {
-                    dgvChamCong.Rows.Add(nv.MaNhanVien, nv.HoTen, nv.TinhTrang);
+                    dgvChamCong.Rows.Add(nv.MaNhanVien, nv.HoTen, "Đi Làm");
                 }
             }
         }
@@ -82,51 +79,33 @@ namespace QLNhanVien
                 btnXoaChamCong.Enabled = false;
                 dgvChamCong.ReadOnly = true;
                 btnTinhLuongThang.Visible = false;
+                btnPhucHoiNhanVien.Visible = false;
             }
         }
 
         private void btnLuu_Click(object sender, EventArgs e)
         {
-            using (var dbContext = new Model1())
+            foreach (DataGridViewRow row in dgvChamCong.Rows)
             {
-                // Lấy ngày đã chọn từ DateTimePicker
-                DateTime selectedDate = dtpNgay.Value.Date;
-
-                // Duyệt qua từng hàng trong DataGridView để lưu chấm công
-                foreach (DataGridViewRow row in dgvChamCong.Rows)
+                if (row.Cells["MaNhanVien"].Value != null)
                 {
-                    if (row.Cells["MaNhanVien"].Value != null)
+                    int maNhanVien = Convert.ToInt32(row.Cells["MaNhanVien"].Value);
+                    string tinhTrang = row.Cells["TinhTrang"].Value.ToString();
+                    DateTime selectedDate = dtpNgay.Value.Date;
+
+                    ChamCong chamCong = new ChamCong
                     {
-                        int maNhanVien = Convert.ToInt32(row.Cells["MaNhanVien"].Value);
-                        string tenNhanVien = row.Cells["TenNhanVien"].Value.ToString();
-                        string tinhTrang = row.Cells["TinhTrang"].Value.ToString();
+                        MaNhanVien = maNhanVien,
+                        TenNhanVien = row.Cells["TenNhanVien"].Value.ToString(),
+                        Ngay = selectedDate,
+                        TrangThai = tinhTrang
+                    };
 
-                        // Kiểm tra xem đã có bản ghi chấm công cho nhân viên này trong ngày đã chọn chưa
-                        var existingRecord = dbContext.ChamCong
-                            .FirstOrDefault(cc => cc.MaNhanVien == maNhanVien && DbFunctions.TruncateTime(cc.Ngay) == selectedDate);
-
-                        if (existingRecord != null)
-                        {
-                            // Nếu đã có, cập nhật thông tin
-                            existingRecord.TrangThai = tinhTrang;
-                        }
-                        else
-                        {
-                            // Nếu chưa có, thêm mới bản ghi
-                            ChamCong chamCong = new ChamCong()
-                            {
-                                MaNhanVien = maNhanVien,
-                                TenNhanVien = tenNhanVien,  // Lưu tên nhân viên
-                                Ngay = selectedDate,
-                                TrangThai = tinhTrang
-                            };
-                            dbContext.ChamCong.Add(chamCong);
-                        }
-                    }
+                    chamCongBUS.LuuChamCong(chamCong);
                 }
-                dbContext.SaveChanges();
-                MessageBox.Show("Chấm công đã được lưu thành công!");
             }
+
+            MessageBox.Show("Chấm công đã được lưu thành công!");
         }
 
      
@@ -180,39 +159,19 @@ namespace QLNhanVien
 
         private void btnXoaChamCong_Click(object sender, EventArgs e)
         {
-            using (var dbContext = new Model1())
+            if (dgvChamCong.CurrentRow != null && dgvChamCong.CurrentRow.Cells["MaNhanVien"].Value != null)
             {
-                // Kiểm tra xem người dùng đã chọn hàng nào trong DataGridView chưa
-                if (dgvChamCong.CurrentRow != null && dgvChamCong.CurrentRow.Cells["MaNhanVien"].Value != null)
-                {
-                    // Lấy mã nhân viên từ DataGridView
-                    int maNhanVien = Convert.ToInt32(dgvChamCong.CurrentRow.Cells["MaNhanVien"].Value);
+                int maNhanVien = Convert.ToInt32(dgvChamCong.CurrentRow.Cells["MaNhanVien"].Value);
+                DateTime selectedDate = dtpNgay.Value.Date;
 
-                    // Tìm kiếm bản ghi chấm công của nhân viên trong cơ sở dữ liệu
-                    var chamCongToDelete = dbContext.ChamCong
-                        .Where(cc => cc.MaNhanVien == maNhanVien)
-                        .ToList();
+                chamCongBUS.XoaChamCong(maNhanVien, selectedDate);
+                LoadChamCongData();
 
-                    if (chamCongToDelete.Count > 0)
-                    {
-                        // Nếu có bản ghi chấm công của nhân viên này, tiến hành xóa
-                        dbContext.ChamCong.RemoveRange(chamCongToDelete);
-                        dbContext.SaveChanges();
-
-                        MessageBox.Show("Đã xóa chấm công của nhân viên.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                        // Làm mới lại DataGridView sau khi xóa
-                        LoadChamCongDataForDate(dtpNgay.Value); // Tải lại dữ liệu chấm công cho ngày hiện tại
-                    }
-                    else
-                    {
-                        MessageBox.Show("Nhân viên không có chấm công để xóa.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    }
-                }
-                else
-                {
-                    MessageBox.Show("Vui lòng chọn một nhân viên để xóa.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
+                MessageBox.Show("Đã xóa chấm công của nhân viên thành công.");
+            }
+            else
+            {
+                MessageBox.Show("Vui lòng chọn một nhân viên để xóa chấm công.");
             }
         }
 
@@ -229,6 +188,23 @@ namespace QLNhanVien
 
             // Sau khi mở form frmTongLuong, bạn có thể tính lương và hiển thị
             frm.TinhLuongThang();
+        }
+
+        private void btnPhucHoiNhanVien_Click(object sender, EventArgs e)
+        {
+            DateTime selectedDate = dtpNgay.Value.Date;
+            var nhanVienChuaChamCong = chamCongBUS.LayDanhSachNhanVienChuaChamCong(selectedDate);
+
+            foreach (var nv in nhanVienChuaChamCong)
+            {
+                dgvChamCong.Rows.Add(nv.MaNhanVien, nv.HoTen, "Đi Làm");
+            }
+            MessageBox.Show("Đã thêm lại các nhân viên chưa có chấm công.", "Thông báo");
+        }
+
+        private void btnThoat_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
     }
 }
