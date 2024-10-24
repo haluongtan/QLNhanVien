@@ -1,7 +1,10 @@
-﻿using System;
+using BUS;
+using DAL.Entities;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Entity;
 using System.Data.Entity.Core.Common.CommandTrees;
 using System.Drawing;
 using System.Linq;
@@ -13,12 +16,12 @@ namespace QLNhanVien
 {
     public partial class frmMain : Form
     {
-        private Model1 dbContext {  get; set; }
-
+        private NhanVienBUS nhanVienBUS = new NhanVienBUS();
+        private Model1 dbContext;
         public frmMain()
         {
             InitializeComponent();
-            dbContext = new Model1();  // Khởi tạo dbContext
+            dbContext = new Model1();
 
         }
 
@@ -28,63 +31,110 @@ namespace QLNhanVien
             dgvNhanVien.Columns["Luong"].Visible = false;
             dgvNhanVien.Columns["ChucVu"].Visible = false;
             dgvNhanVien.Columns["PhongBan"].Visible = false;
+            dgvNhanVien.Columns["MaChamCong"].Visible = false;
+            dgvNhanVien.Columns["ChamCong"].Visible = false;
+
         }
         public void LoadData()
         {
-            dgvNhanVien.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-
-            var nhanVienList = dbContext.NhanVien.ToList();
+            var nhanVienList = nhanVienBUS.LayDanhSachNhanVien();
             dgvNhanVien.DataSource = nhanVienList;
+
+            if (dgvNhanVien.Columns["AvatarPath"] == null)
+            {
+                dgvNhanVien.Columns.Add("AvatarPath", "Avatar Path");
+            }
+
+            dgvNhanVien.Columns["AvatarPath"].Visible = false; // Để tránh hiện đường dẫn hình ảnh trên lưới
 
             if (dgvNhanVien.Rows.Count > 0)
             {
-                dgvNhanVien.Rows[0].Selected = true;  
+                dgvNhanVien.Rows[0].Selected = true;
+            }
+
+            dgvNhanVien.Refresh();
+        }
+        public void CapNhatNhanVien(NhanVien nhanVien)
+        {
+            foreach (DataGridViewRow row in dgvNhanVien.Rows)
+            {
+                if (int.Parse(row.Cells["MaNhanVien"].Value.ToString()) == nhanVien.MaNhanVien)
+                {
+                    row.Cells["HoTen"].Value = nhanVien.HoTen;
+                    row.Cells["NgaySinh"].Value = nhanVien.NgaySinh;
+                    row.Cells["GioiTinh"].Value = nhanVien.GioiTinh;
+                    row.Cells["SDT"].Value = nhanVien.SDT;
+                    row.Cells["DiaChi"].Value = nhanVien.DiaChi;
+                    row.Cells["MaPhongBan"].Value = nhanVien.MaPhongBan;
+                    row.Cells["MaChucVu"].Value = nhanVien.MaChucVu;
+                    row.Cells["NgayVaoLam"].Value = nhanVien.NgayVaoLam;
+                    row.Cells["Email"].Value = nhanVien.Email;
+                    row.Cells["AvatarPath"].Value = nhanVien.AvatarPath;
+
+                    // Nếu muốn cập nhật lại ảnh trên form chính
+                    if (row.Selected && ptrAvatar != null)
+                    {
+                        if (!string.IsNullOrEmpty(nhanVien.AvatarPath) && System.IO.File.Exists(nhanVien.AvatarPath))
+                        {
+                            ptrAvatar.Image = Image.FromFile(nhanVien.AvatarPath);
+                        }
+                        else
+                        {
+                            ptrAvatar.Image = null;
+                        }
+                    }
+                    break;
+                }
             }
         }
 
+
         private void dgvNhanVien_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex >= 0)
+            if (e.RowIndex >= 0) // Đảm bảo rằng hàng được chọn là hợp lệ
             {
                 DataGridViewRow row = dgvNhanVien.Rows[e.RowIndex];
 
-                // Kiểm tra null trước khi truy xuất giá trị của từng ô
-                txtMaNV.Text = row.Cells["MaNhanVien"].Value != null ? row.Cells["MaNhanVien"].Value.ToString() : string.Empty;
-                txtHoTen.Text = row.Cells["HoTen"].Value != null ? row.Cells["HoTen"].Value.ToString() : string.Empty;
+                txtMaNV.Text = row.Cells["MaNhanVien"].Value?.ToString() ?? string.Empty;
+                txtHoTen.Text = row.Cells["HoTen"].Value?.ToString() ?? string.Empty;
 
                 if (row.Cells["NgaySinh"].Value != null)
-                {
                     dtpNgaySinh.Value = Convert.ToDateTime(row.Cells["NgaySinh"].Value);
-                }
                 else
-                {
-                    dtpNgaySinh.Value = DateTime.Now;  // Giá trị mặc định nếu null
-                }
+                    dtpNgaySinh.Value = DateTime.Now;
 
-                if (row.Cells["GioiTinh"].Value != null && row.Cells["GioiTinh"].Value.ToString() == "Nam")
-                {
-                    rbNam.Checked = true;
-                }
-                else
-                {
-                    rbNu.Checked = true;
-                }
+                rbNam.Checked = row.Cells["GioiTinh"].Value?.ToString() == "Nam";
+                rbNu.Checked = row.Cells["GioiTinh"].Value?.ToString() == "Nữ";
 
-                txtSDT.Text = row.Cells["SDT"].Value != null ? row.Cells["SDT"].Value.ToString() : string.Empty;
-                txtDiaChi.Text = row.Cells["DiaChi"].Value != null ? row.Cells["DiaChi"].Value.ToString() : string.Empty;
-                txtMaPhongBan.Text = row.Cells["MaPhongBan"].Value != null ? row.Cells["MaPhongBan"].Value.ToString() : string.Empty;
-                txtMaChucVu.Text = row.Cells["MaChucVu"].Value != null ? row.Cells["MaChucVu"].Value.ToString() : string.Empty;
+                txtSDT.Text = row.Cells["SDT"].Value?.ToString() ?? string.Empty;
+                txtDiaChi.Text = row.Cells["DiaChi"].Value?.ToString() ?? string.Empty;
+                txtMaPhongBan.Text = row.Cells["MaPhongBan"].Value?.ToString() ?? string.Empty;
+                txtMaChucVu.Text = row.Cells["MaChucVu"].Value?.ToString() ?? string.Empty;
 
                 if (row.Cells["NgayVaoLam"].Value != null)
-                {
                     dtpNgayVaoLam.Value = Convert.ToDateTime(row.Cells["NgayVaoLam"].Value);
+                else
+                    dtpNgayVaoLam.Value = DateTime.Now;
+
+                txtEmail.Text = row.Cells["Email"].Value?.ToString() ?? string.Empty;
+
+                // Hiển thị ảnh đại diện nếu có
+                if (row.Cells["AvatarPath"].Value != null)
+                {
+                    string avatarPath = row.Cells["AvatarPath"].Value.ToString();
+                    if (System.IO.File.Exists(avatarPath))
+                    {
+                        ptrAvatar.Image = Image.FromFile(avatarPath);
+                    }
+                    else
+                    {
+                        ptrAvatar.Image = null; // Nếu không tìm thấy ảnh, để trống PictureBox
+                    }
                 }
                 else
                 {
-                    dtpNgayVaoLam.Value = DateTime.Now;  // Giá trị mặc định nếu null
+                    ptrAvatar.Image = null; // Nếu không có đường dẫn ảnh, để trống PictureBox
                 }
-
-                txtEmail.Text = row.Cells["Email"].Value != null ? row.Cells["Email"].Value.ToString() : string.Empty;
             }
         }
 
@@ -92,22 +142,19 @@ namespace QLNhanVien
         {
             if (!string.IsNullOrEmpty(txtMaNV.Text))
             {
-                int maNhanVien = int.Parse(txtMaNV.Text);
+                // Hiển thị hộp thoại xác nhận xóa
+                DialogResult result = MessageBox.Show("Bạn có chắc chắn muốn xóa nhân viên này không?",
+                                                      "Xác nhận xóa",
+                                                      MessageBoxButtons.YesNo,
+                                                      MessageBoxIcon.Warning);
 
-                var nhanVienToDelete = dbContext.NhanVien.SingleOrDefault(nv => nv.MaNhanVien == maNhanVien);
-
-                if (nhanVienToDelete != null)
+                // Nếu người dùng chọn Yes, thực hiện xóa
+                if (result == DialogResult.Yes)
                 {
-                    dbContext.NhanVien.Remove(nhanVienToDelete);
-                    dbContext.SaveChanges();
+                    int maNhanVien = int.Parse(txtMaNV.Text);
+                    nhanVienBUS.XoaNhanVien(maNhanVien);
                     MessageBox.Show("Đã xóa nhân viên thành công!");
-
-                    // Refresh the DataGridView
-                    LoadData();
-                }
-                else
-                {
-                    MessageBox.Show("Không tìm thấy nhân viên để xóa.");
+                    LoadData(); // Refresh lại DataGridView
                 }
             }
             else
@@ -118,14 +165,12 @@ namespace QLNhanVien
 
         private void btnThem_Click(object sender, EventArgs e)
         {
-            frmThemNhanVien ThemNV = new frmThemNhanVien(this, dbContext);
+            frmThemNhanVien themNV = new frmThemNhanVien(); // Không cần truyền dbContext
+            var result = themNV.ShowDialog();
 
-            // Mở form thêm nhân viên và kiểm tra kết quả trả về
-            var result = ThemNV.ShowDialog();
-
-            // Chỉ mở form ThemLuong nếu nhân viên mới được thêm thành công
             if (result == DialogResult.OK)
             {
+                LoadData();
                 var nhanVienMoi = dbContext.NhanVien.ToList().LastOrDefault();
 
                 if (nhanVienMoi != null)
@@ -136,10 +181,6 @@ namespace QLNhanVien
                     {
                         frmChamCong.AddNhanVienToChamCong(nhanVienMoi.MaNhanVien, nhanVienMoi.HoTen);
                     }
-
-                    frmThemLuong formThemLuong = new frmThemLuong();
-                    formThemLuong.AddNhanVienToGrid(nhanVienMoi.MaNhanVien, nhanVienMoi.HoTen);
-                    formThemLuong.Show();
                 }
             }
         }
@@ -149,20 +190,11 @@ namespace QLNhanVien
             if (dgvNhanVien.CurrentRow != null) // Kiểm tra nếu có dòng hiện tại được chọn
             {
                 int maNhanVien = int.Parse(dgvNhanVien.CurrentRow.Cells["MaNhanVien"].Value.ToString());
-
-                // Tìm nhân viên trong dbContext
                 var nhanVien = dbContext.NhanVien.SingleOrDefault(nv => nv.MaNhanVien == maNhanVien);
 
-                if (nhanVien != null)
-                {
-                    // Mở form sửa nhân viên và truyền nhân viên cần sửa
-                    frmSuaNhanVien suaNV = new frmSuaNhanVien(this, dbContext, nhanVien);
-                    suaNV.ShowDialog();  // Hiển thị form sửa
-                }
-                else
-                {
-                    MessageBox.Show("Không tìm thấy nhân viên để sửa.");
-                }
+                // Mở form sửa nhân viên và truyền form chính vào
+                frmSuaNhanVien suaNV = new frmSuaNhanVien(this, maNhanVien);
+                suaNV.ShowDialog();  // Hiển thị form sửa
             }
             else
             {
@@ -181,12 +213,7 @@ namespace QLNhanVien
 
             if (!string.IsNullOrEmpty(tuKhoa))
             {
-                var ketQuaTimKiem = dbContext.NhanVien
-                    .Where(nv => nv.MaNhanVien.ToString().Contains(tuKhoa) ||
-                                 nv.HoTen.Contains(tuKhoa) ||
-                                 nv.SDT.Contains(tuKhoa))
-                    .ToList();
-
+                var ketQuaTimKiem = nhanVienBUS.TimKiemNhanVien(tuKhoa);
                 dgvNhanVien.DataSource = ketQuaTimKiem;
 
                 if (ketQuaTimKiem.Count == 0)
@@ -198,8 +225,18 @@ namespace QLNhanVien
             {
                 MessageBox.Show("Vui lòng nhập từ khóa tìm kiếm.");
             }
+
+
         }
 
+        private void ptrAvatar_Click(object sender, EventArgs e)
+        {
 
+        }
+
+        private void btnThoat_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
     }
 }
