@@ -1,4 +1,5 @@
-﻿using System;
+using QLNhanVien;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -8,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace QLNhanVien
+namespace QuanLyNhanSu
 {
     public partial class frmQuanLyNhanSu : Form
     {
@@ -28,45 +29,59 @@ namespace QLNhanVien
             // Hiển thị form con
             childForm.Show();
         }
+
+        private void frmQuanLyNhanSu_Load(object sender, EventArgs e)
+        {
+
+        }
+
         private void mainToolStripMenuItem_Click(object sender, EventArgs e)
         {
             frmMain Main = new frmMain();
             OpenChildForm(Main);
         }
 
-        private void toolStripPhongBan_Click(object sender, EventArgs e)
+        private void quảnLýPhòngBanToolStripMenuItem_Click(object sender, EventArgs e)
         {
             frmPhongBan phongBan = new frmPhongBan();
             OpenChildForm(phongBan);
         }
 
-        private void chứcVụToolStripMenuItem_Click(object sender, EventArgs e)
+        private void quảnLýChứcVụToolStripMenuItem_Click(object sender, EventArgs e)
         {
             frmChucVu chucVu = new frmChucVu();
             OpenChildForm(chucVu);
         }
 
-        private void hợpĐồngToolStripMenuItem_Click(object sender, EventArgs e)
+        private void quảnLýHợpĐồngToolStripMenuItem_Click(object sender, EventArgs e)
         {
             frmHopDong hopDong = new frmHopDong();
             OpenChildForm(hopDong);
+
         }
 
-        private void toolStripQuanLyLuong_Click(object sender, EventArgs e)
+        private void sựKiệnToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            frmQuanLySuKien frmQuanLySuKien = new frmQuanLySuKien();
+            OpenChildForm(frmQuanLySuKien);
+        }
+
+        private void quảnLýLươngToolStripMenuItem_Click(object sender, EventArgs e)
         {
             frmQuanLyLuong quanLyLuong = new frmQuanLyLuong();
             OpenChildForm(quanLyLuong);
         }
 
-        private void toolStripQuanLyChamCong_Click(object sender, EventArgs e)
+        private void quảnLýChấmCôngToolStripMenuItem_Click(object sender, EventArgs e)
         {
             frmChamCong chamCong = new frmChamCong();
             OpenChildForm(chamCong);
         }
 
-        private void frmQuanLyNhanSu_Load(object sender, EventArgs e)
+        private void quảnLýỨngLươngToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            frmUngLuong frmUngLuong = new frmUngLuong();
+            OpenChildForm(frmUngLuong);
         }
     }
 }
