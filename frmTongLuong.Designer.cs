@@ -28,9 +28,11 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmTongLuong));
             this.dgvTongLuong = new System.Windows.Forms.DataGridView();
             this.label1 = new System.Windows.Forms.Label();
             this.btnXuatExcel = new System.Windows.Forms.Button();
+            this.btnThoat = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dgvTongLuong)).BeginInit();
             this.SuspendLayout();
             // 
@@ -64,16 +66,30 @@
             this.btnXuatExcel.UseVisualStyleBackColor = true;
             this.btnXuatExcel.Click += new System.EventHandler(this.btnXuatExcel_Click);
             // 
+            // btnThoat
+            // 
+            this.btnThoat.Image = ((System.Drawing.Image)(resources.GetObject("btnThoat.Image")));
+            this.btnThoat.Location = new System.Drawing.Point(611, 178);
+            this.btnThoat.Name = "btnThoat";
+            this.btnThoat.Size = new System.Drawing.Size(80, 41);
+            this.btnThoat.TabIndex = 18;
+            this.btnThoat.UseVisualStyleBackColor = true;
+            this.btnThoat.Click += new System.EventHandler(this.btnThoat_Click);
+            // 
             // frmTongLuong
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(857, 601);
+            this.ControlBox = false;
+            this.Controls.Add(this.btnThoat);
             this.Controls.Add(this.btnXuatExcel);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.dgvTongLuong);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "frmTongLuong";
-            this.Text = "frmTongLuong";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Text = "Tổng lương";
             this.Load += new System.EventHandler(this.frmTongLuong_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dgvTongLuong)).EndInit();
             this.ResumeLayout(false);
@@ -86,5 +102,6 @@
         private System.Windows.Forms.DataGridView dgvTongLuong;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btnXuatExcel;
+        private System.Windows.Forms.Button btnThoat;
     }
 }
