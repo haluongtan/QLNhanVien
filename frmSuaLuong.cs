@@ -1,4 +1,6 @@
-﻿using System;
+using BUS;
+using DAL.Entities;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -12,13 +14,16 @@ namespace QLNhanVien
 {
     public partial class frmSuaLuong : Form
     {
-        private frmQuanLyLuong parentForm;
+        private LuongBUS luongBUS;
         private int maNhanVien;
-        public frmSuaLuong(frmQuanLyLuong form, int maNV, string tenNV, decimal luongCB, decimal phuCap, int thang, int nam)
+        private frmQuanLyLuong parentForm;
+
+        public frmSuaLuong(frmQuanLyLuong parent, int maNV, string tenNV, decimal luongCB, decimal phuCap, int thang, int nam)
         {
             InitializeComponent();
-            parentForm = form;
+            luongBUS = new LuongBUS();
             maNhanVien = maNV;
+            parentForm = parent;
 
             txtMaNV.Text = maNV.ToString();
             txtTenNV.Text = tenNV;
@@ -32,27 +37,19 @@ namespace QLNhanVien
         {
             if (ValidateInputs())
             {
-                using (var dbContext = new Model1())
+                Luong luong = luongBUS.LayLuongTheoMaNhanVien(maNhanVien);
+                if (luong != null)
                 {
-                    var luong = dbContext.Luong.FirstOrDefault(l => l.MaNhanVien == maNhanVien);
-                    if (luong != null)
-                    {
-                        luong.LuongCoBan = decimal.Parse(txtLuongCoBan.Text);
-                        luong.PhuCap = decimal.Parse(txtPhuCap.Text);
-                        luong.Thang = int.Parse(txtThang.Text);
-                        luong.Nam = int.Parse(txtNam.Text);
+                    luong.LuongCoBan = decimal.Parse(txtLuongCoBan.Text);
+                    luong.PhuCap = decimal.Parse(txtPhuCap.Text);
+                    luong.Thang = int.Parse(txtThang.Text);
+                    luong.Nam = int.Parse(txtNam.Text);
 
-                        dbContext.SaveChanges();
-                    }
+                    luongBUS.SuaLuong(luong);
+                    MessageBox.Show("Cập nhật lương thành công!");
+                    parentForm.LoadLuongData();
+                    this.Close();
                 }
-
-                MessageBox.Show("Cập nhật lương thành công!");
-
-                // Refresh the parent form's data grid
-                parentForm.LoadLuongData();
-
-                // Close the form
-                this.Close();
             }
         }
         private bool ValidateInputs()
