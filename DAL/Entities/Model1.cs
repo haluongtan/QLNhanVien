@@ -22,6 +22,9 @@ namespace DAL.Entities
         public virtual DbSet<TongLuong> TongLuong { get; set; }
         public virtual DbSet<Users> Users { get; set; }
         public DbSet<UngLuong> UngLuong { get; set; }
+        public DbSet<ThongBaoSuKien> ThongBaoSuKien { get; set; }
+        public DbSet<ThongBaoNhanVien> ThongBaoNhanVien { get; set; }
+
   
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

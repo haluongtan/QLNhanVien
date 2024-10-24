@@ -60,6 +60,8 @@
     <Compile Include="Entities\NhanVien.cs" />
     <Compile Include="Entities\PhongBan.cs" />
     <Compile Include="Entities\sysdiagrams.cs" />
+    <Compile Include="Entities\ThongBaoNhanVien.cs" />
+    <Compile Include="Entities\ThongBaoSuKien.cs" />
     <Compile Include="Entities\TongLuong.cs" />
     <Compile Include="Entities\UngLuong.cs" />
     <Compile Include="Entities\Users.cs" />
@@ -70,6 +72,7 @@
     <Compile Include="NhanVienDTO.cs" />
     <Compile Include="PhongBanDAL.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ThongBaoSuKienDAL.cs" />
     <Compile Include="TongLuongDAL.cs" />
     <Compile Include="TongLuongDTO.cs" />
     <Compile Include="UngLuongDAL.cs" />
