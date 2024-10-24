@@ -1,4 +1,5 @@
-﻿using System;
+using BUS;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -13,32 +14,41 @@ namespace QLNhanVien
 {
     public partial class frmPhongBan : Form
     {
-        private Model1 dbContext;
-        public frmPhongBan()
+        private PhongBanBUS phongBanBUS = new PhongBanBUS();
+        private NhanVienBUS nhanVienBUS = new NhanVienBUS(); public frmPhongBan()
         {
             InitializeComponent();
-            dbContext = new Model1();  // Khởi tạo dbContext để kết nối với CSDL
 
         }
 
         private void frmPhongBan_Load(object sender, EventArgs e)
         {
-            var phongBans = new Dictionary<int, string>
-    {
-        { 1, "IT" },
-        { 2, "Marketing" },
-        { 3, "Kế Toán" }
-    };
-
-            cmbPhongBan.DataSource = new BindingSource(phongBans, null);
-            cmbPhongBan.DisplayMember = "Value";
-            cmbPhongBan.ValueMember = "Key";
+           LoadData();
 
             dgvNhanVien.CellClick += dgvNhanVien_CellClick;
 
-
         }
-   
+        private void LoadData()
+        {
+
+            var phongBans = phongBanBUS.LayDanhSachPhongBan();
+            cmbPhongBan.DataSource = phongBans;
+            cmbPhongBan.DisplayMember = "TenPhongBan";
+            cmbPhongBan.ValueMember = "MaPhongBan";
+            dgvNhanVien.DataSource = null;
+            dgvNhanVien.Columns.Clear();
+
+            // Ẩn các cột không cần thiết
+            if (dgvNhanVien.Columns["MaChamCong"] != null)
+                dgvNhanVien.Columns["MaChamCong"].Visible = false;
+
+            if (dgvNhanVien.Columns["ChamCong"] != null)
+                dgvNhanVien.Columns["ChamCong"].Visible = false;
+
+            if (dgvNhanVien.Columns["AvatarPath"] != null)
+                dgvNhanVien.Columns["AvatarPath"].Visible = false;
+        }
+
 
         private void cmbPhongBan_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -46,10 +56,8 @@ namespace QLNhanVien
             {
                 int selectedPhongBanId = (int)cmbPhongBan.SelectedValue;
 
-                // Lọc danh sách nhân viên theo mã phòng ban
-                var nhanVienList = dbContext.NhanVien
-                    .Where(nv => nv.MaPhongBan == selectedPhongBanId)
-                    .ToList();
+                // Lọc danh sách nhân viên theo mã phòng ban qua BUS
+                var nhanVienList = phongBanBUS.LayDanhSachNhanVienTheoPhongBan(selectedPhongBanId);
 
                 // Hiển thị danh sách nhân viên trong DataGridView
                 dgvNhanVien.DataSource = nhanVienList;
@@ -58,9 +66,24 @@ namespace QLNhanVien
                 {
                     MessageBox.Show("Không có nhân viên nào trong phòng ban này.");
                 }
-                dgvNhanVien.Columns["Luong"].Visible = false;
-                dgvNhanVien.Columns["ChucVu"].Visible = false;
-                dgvNhanVien.Columns["PhongBan"].Visible = false;
+
+                if (dgvNhanVien.Columns["Luong"] != null)
+                    dgvNhanVien.Columns["Luong"].Visible = false;
+
+                if (dgvNhanVien.Columns["ChucVu"] != null)
+                    dgvNhanVien.Columns["ChucVu"].Visible = false;
+
+                if (dgvNhanVien.Columns["PhongBan"] != null)
+                    dgvNhanVien.Columns["PhongBan"].Visible = false;
+
+                if (dgvNhanVien.Columns["MaChamCong"] != null)
+                    dgvNhanVien.Columns["MaChamCong"].Visible = false;
+
+                if (dgvNhanVien.Columns["ChamCong"] != null)
+                    dgvNhanVien.Columns["ChamCong"].Visible = false;
+
+                if (dgvNhanVien.Columns["AvatarPath"] != null)
+                    dgvNhanVien.Columns["AvatarPath"].Visible = false;
             }
 
         }
@@ -69,10 +92,9 @@ namespace QLNhanVien
         {
             if (e.RowIndex >= 0)
             {
-                // Lấy dòng hiện tại
+                
                 DataGridViewRow row = dgvNhanVien.Rows[e.RowIndex];
 
-                // Hiển thị thông tin nhân viên lên các điều khiển tương ứng
                 txtHoTen.Text = row.Cells["HoTen"].Value.ToString();
                 dtpNgaySinh.Value = Convert.ToDateTime(row.Cells["NgaySinh"].Value);
 
@@ -88,6 +110,11 @@ namespace QLNhanVien
                 txtSDT.Text = row.Cells["SDT"].Value.ToString();
                 txtEmail.Text = row.Cells["Email"].Value.ToString();
             }
+        }
+
+        private void btnThoat_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
     }
 }
