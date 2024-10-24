@@ -1,4 +1,5 @@
-﻿using System;
+using BUS;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -8,11 +9,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using DAL.Entities;
 
 namespace QLNhanVien
 {
     public partial class frmHopDong : Form
     {
+        private HopDongBus hopDongBUS = new HopDongBus();
+
         public frmHopDong()
         {
             InitializeComponent();
@@ -20,33 +24,8 @@ namespace QLNhanVien
 
         private void frmHopDong_Load(object sender, EventArgs e)
         {
-            using (var dbContext = new Model1())
-            {
-                var hopDongData = (from hd in dbContext.HopDong
-                                   join nv in dbContext.NhanVien on hd.MaNhanVien equals nv.MaNhanVien
-                                   select new
-                                   {
-                                       hd.MaHopDong,
-                                       hd.MaNhanVien,
-                                       TenNhanVien = nv.HoTen,
-                                       hd.LoaiHopDong,
-                                       hd.NgayKy,
-                                       hd.NgayHetHan
-                                   }).ToList();
+            RefreshGrid();
 
-                dgvHopDong.DataSource = hopDongData;
-
-                // Rename columns for display
-                dgvHopDong.Columns["MaHopDong"].HeaderText = "Mã Hợp Đồng";
-                dgvHopDong.Columns["MaNhanVien"].HeaderText = "Mã Nhân Viên";
-                dgvHopDong.Columns["TenNhanVien"].HeaderText = "Tên Nhân Viên";
-                dgvHopDong.Columns["LoaiHopDong"].HeaderText = "Loại Hợp Đồng";
-                dgvHopDong.Columns["NgayKy"].HeaderText = "Ngày Ký";
-                dgvHopDong.Columns["NgayHetHan"].HeaderText = "Ngày Hết Hạn";
-
-                // Optionally, adjust column widths
-                dgvHopDong.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            }
         }
 
         private void dgvHopDong_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -84,40 +63,33 @@ namespace QLNhanVien
         }
         public void RefreshGrid()
         {
-            using (var dbContext = new Model1())
-            {
-                var hopDongData = (from hd in dbContext.HopDong
-                                   join nv in dbContext.NhanVien on hd.MaNhanVien equals nv.MaNhanVien
-                                   select new
-                                   {
-                                       hd.MaHopDong,
-                                       hd.MaNhanVien,
-                                       TenNhanVien = nv.HoTen,
-                                       hd.LoaiHopDong,
-                                       hd.NgayKy,
-                                       hd.NgayHetHan
-                                   }).ToList();
+            var hopDongData = hopDongBUS.LayDanhSachHopDong();
+            dgvHopDong.DataSource = hopDongData;
 
-                dgvHopDong.DataSource = hopDongData;
+            // Rename columns for display
+            dgvHopDong.Columns["MaHopDong"].HeaderText = "Mã Hợp Đồng";
+            dgvHopDong.Columns["MaNhanVien"].HeaderText = "Mã Nhân Viên";
+            dgvHopDong.Columns["TenNhanVien"].HeaderText = "Tên Nhân Viên";
+            dgvHopDong.Columns["LoaiHopDong"].HeaderText = "Loại Hợp Đồng";
+            dgvHopDong.Columns["NgayKy"].HeaderText = "Ngày Ký";
+            dgvHopDong.Columns["NgayHetHan"].HeaderText = "Ngày Hết Hạn";
 
-                // Optional: Adjust the DataGridView columns again
-            }
+            dgvHopDong.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         }
 
         private void btnThem_Click(object sender, EventArgs e)
         {
-            frmThemHopDong ThemHD = new frmThemHopDong();  
+            frmThemHopDong ThemHD = new frmThemHopDong();
             ThemHD.ShowDialog();
+            RefreshGrid();
         }
 
         private void btnSua_Click(object sender, EventArgs e)
         {
             using (var dbContext = new Model1())
             {
-                // Lấy Mã Hợp Đồng từ textbox
                 int maHopDong = int.Parse(txtMaHD.Text);
 
-                // Tìm hợp đồng cần sửa dựa vào Mã Hợp Đồng
                 var hopDongToUpdate = dbContext.HopDong.FirstOrDefault(hd => hd.MaHopDong == maHopDong);
 
                 if (hopDongToUpdate != null)
@@ -194,45 +166,30 @@ namespace QLNhanVien
         private void btnTimKiem_Click(object sender, EventArgs e)
         {
             string tuKhoa = txtTimKiem.Text.Trim();
-            using (var dbContext = new Model1())
+            if (!string.IsNullOrEmpty(tuKhoa))
             {
-                if (!string.IsNullOrEmpty(tuKhoa))
-                {
-                    // Tìm kiếm hợp đồng dựa trên tên nhân viên
-                    var ketQuaTimKiem = (from hd in dbContext.HopDong
-                                         join nv in dbContext.NhanVien on hd.MaNhanVien equals nv.MaNhanVien
-                                         where nv.HoTen.Contains(tuKhoa)
-                                         select new
-                                         {
-                                             hd.MaHopDong,
-                                             hd.MaNhanVien,
-                                             TenNhanVien = nv.HoTen,
-                                             hd.LoaiHopDong,
-                                             hd.NgayKy,
-                                             hd.NgayHetHan
-                                         }).ToList();
+                var ketQuaTimKiem = hopDongBUS.TimKiemHopDong(tuKhoa);
+                dgvHopDong.DataSource = ketQuaTimKiem;
 
-                    // Kiểm tra nếu có kết quả tìm kiếm
-                    if (ketQuaTimKiem.Any())
-                    {
-                        dgvHopDong.DataSource = ketQuaTimKiem;
-                    }
-                    else
-                    {
-                        MessageBox.Show("Không tìm thấy kết quả nào phù hợp.");
-                    }
-                }
-                else
+                if (ketQuaTimKiem.Count == 0)
                 {
-                    MessageBox.Show("Vui lòng nhập từ khóa tìm kiếm.");
+                    MessageBox.Show("Không tìm thấy kết quả nào phù hợp.");
                 }
             }
-
+            else
+            {
+                MessageBox.Show("Vui lòng nhập từ khóa tìm kiếm.");
+            }
         }
 
         private void btnBack_Click(object sender, EventArgs e)
         {
             RefreshGrid();
+        }
+
+        private void btnThoat_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
     }
 }
