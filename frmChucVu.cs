@@ -1,4 +1,5 @@
-﻿using System;
+using BUS;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -12,82 +13,96 @@ namespace QLNhanVien
 {
     public partial class frmChucVu : Form
     {
-        private Model1 dbContext;
-        private Dictionary<int, int> luongTheoChucVu = new Dictionary<int, int>
-        {
-            { 1, 10000 },  // Nhân viên
-            { 2, 15000 },  // Trưởng phòng
-            { 3, 12000 }   // Quản lý dự án
-        };
+        private ChucVuBUS chucVuBUS = new ChucVuBUS();
+
 
 
         public frmChucVu()
         {
             InitializeComponent();
-            dbContext = new Model1();  // Khởi tạo DbContext
 
         }
 
         private void frmChucVu_Load(object sender, EventArgs e)
         {
-            
-            var chucVus = new Dictionary<int, string>
-            {
-                { 1, "Nhân Viên" },
-                { 2, "Trưởng Phòng" },
-                { 3, "Quản Lý Dự Án" }
-            };
 
-            cmbChucVu.DataSource = new BindingSource(chucVus, null);
-            cmbChucVu.DisplayMember = "Value";
-            cmbChucVu.ValueMember = "Key";
-
+            LoadData();
             cmbChucVu.SelectedIndexChanged += cmbChucVu_SelectedIndexChanged;
+
         }
-    
+
+        private void LoadData()
+        {
+            var chucVus = chucVuBUS.LayDanhSachChucVu();
+            cmbChucVu.DataSource = chucVus;
+            cmbChucVu.DisplayMember = "TenChucVu";
+            cmbChucVu.ValueMember = "MaChucVu";
+
+            dgvNhanVien.DataSource = null;
+            dgvNhanVien.Columns.Clear();
+
+            // Ẩn các cột không cần thiết
+            if (dgvNhanVien.Columns["MaChamCong"] != null)
+                dgvNhanVien.Columns["MaChamCong"].Visible = false;
+
+            if (dgvNhanVien.Columns["ChamCong"] != null)
+                dgvNhanVien.Columns["ChamCong"].Visible = false;
+
+            if (dgvNhanVien.Columns["AvatarPath"] != null)
+                dgvNhanVien.Columns["AvatarPath"].Visible = false;
+        }
+
         private void cmbChucVu_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (cmbChucVu.SelectedValue != null && cmbChucVu.SelectedValue is int)
             {
                 int selectedChucVuId = (int)cmbChucVu.SelectedValue;
 
-                // Lọc danh sách nhân viên theo mã chức vụ
-                var nhanVienList = dbContext.NhanVien
-                    .Where(nv => nv.MaChucVu == selectedChucVuId)
-                    .ToList();
-
-                // Hiển thị danh sách nhân viên trong DataGridView
+                // Lấy danh sách nhân viên theo mã chức vụ qua BUS
+                var nhanVienList = chucVuBUS.LayDanhSachNhanVienTheoChucVu(selectedChucVuId);
                 dgvNhanVien.DataSource = nhanVienList;
 
                 // Hiển thị lương tương ứng với mã chức vụ
-                if (luongTheoChucVu.ContainsKey(selectedChucVuId))
-                {
-                    txtLuong.Text = luongTheoChucVu[selectedChucVuId].ToString();
-                }
+                var luong = chucVuBUS.LayLuongTheoChucVu(selectedChucVuId);
+                txtLuong.Text = luong.HasValue ? luong.Value.ToString() : "N/A";
 
                 if (nhanVienList.Count == 0)
                 {
                     MessageBox.Show("Không có nhân viên nào trong chức vụ này.");
                 }
-                dgvNhanVien.Columns["Luong"].Visible = false;
-                dgvNhanVien.Columns["ChucVu"].Visible = false;
-                dgvNhanVien.Columns["PhongBan"].Visible = false;
+
+                // Ẩn các cột không cần thiết nếu chúng tồn tại
+                if (dgvNhanVien.Columns["Luong"] != null)
+                    dgvNhanVien.Columns["Luong"].Visible = false;
+
+                if (dgvNhanVien.Columns["ChucVu"] != null)
+                    dgvNhanVien.Columns["ChucVu"].Visible = false;
+
+                if (dgvNhanVien.Columns["PhongBan"] != null)
+                    dgvNhanVien.Columns["PhongBan"].Visible = false;
+
+                if (dgvNhanVien.Columns["MaChamCong"] != null)
+                    dgvNhanVien.Columns["MaChamCong"].Visible = false;
+
+                if (dgvNhanVien.Columns["ChamCong"] != null)
+                    dgvNhanVien.Columns["ChamCong"].Visible = false;
+
+                if (dgvNhanVien.Columns["AvatarPath"] != null)
+                    dgvNhanVien.Columns["AvatarPath"].Visible = false;
             }
-        
+
         }
 
         private void dgvNhanVien_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0)
             {
-                // Lấy dòng hiện tại
                 DataGridViewRow row = dgvNhanVien.Rows[e.RowIndex];
 
-                // Hiển thị thông tin nhân viên lên các điều khiển tương ứng
-                txtHoTen.Text = row.Cells["HoTen"].Value.ToString();
+                txtHoTen.Text = row.Cells["HoTen"].Value?.ToString();
                 dtpNgaySinh.Value = Convert.ToDateTime(row.Cells["NgaySinh"].Value);
 
-                if (row.Cells["GioiTinh"].Value.ToString() == "Nam")
+                if (row.Cells["GioiTinh"].Value?.ToString() == "Nam")
                 {
                     rbNam.Checked = true;
                 }
@@ -96,20 +111,19 @@ namespace QLNhanVien
                     rbNu.Checked = true;
                 }
 
-                txtSDT.Text = row.Cells["SDT"].Value.ToString();
-                txtChucVu.Text = row.Cells["MaChucVu"].Value.ToString();
+                txtSDT.Text = row.Cells["SDT"].Value?.ToString();
+                txtChucVu.Text = row.Cells["MaChucVu"].Value?.ToString();
 
                 // Hiển thị lương tương ứng với mã chức vụ của nhân viên
                 int maChucVu = Convert.ToInt32(row.Cells["MaChucVu"].Value);
-                if (luongTheoChucVu.ContainsKey(maChucVu))
-                {
-                    txtLuong.Text = luongTheoChucVu[maChucVu].ToString();
-                }
-                else
-                {
-                    txtLuong.Text = "N/A"; // Nếu không có lương tương ứng
-                }
+                var luong = chucVuBUS.LayLuongTheoChucVu(maChucVu);
+                txtLuong.Text = luong.HasValue ? luong.Value.ToString() : "N/A";
             }
-            }
+        }
+
+        private void btnThoat_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
     }
 }
