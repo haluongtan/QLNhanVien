@@ -83,5 +83,10 @@ namespace QuanLyNhanSu
             frmUngLuong frmUngLuong = new frmUngLuong();
             OpenChildForm(frmUngLuong);
         }
+
+        private void thoátToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
     }
 }
