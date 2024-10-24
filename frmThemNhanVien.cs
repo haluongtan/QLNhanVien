@@ -1,4 +1,6 @@
-﻿using System;
+using BUS;
+using DAL.Entities;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -13,14 +15,13 @@ namespace QLNhanVien
 {
     public partial class frmThemNhanVien : Form
     {
-        private frmMain formChinh;
-        private Model1 dbContext;
+        private NhanVienBUS nhanVienBUS = new NhanVienBUS();
 
-        public frmThemNhanVien(frmMain form1, Model1 context)
+
+        public frmThemNhanVien()
         {
             InitializeComponent();
-            formChinh = form1;
-            dbContext = context;
+
             err = new ErrorProvider();
 
 
@@ -30,10 +31,8 @@ namespace QLNhanVien
         {
             try
             {
-                // Kiểm tra xem các ô nhập liệu có hợp lệ không
                 if (!ValidateInputs()) return;
 
-                // Tạo một đối tượng NhanVien mới
                 NhanVien nv = new NhanVien()
                 {
                     MaNhanVien = int.Parse(txtMaNV.Text),
@@ -42,23 +41,17 @@ namespace QLNhanVien
                     GioiTinh = rbNam.Checked ? "Nam" : "Nữ",
                     SDT = txtSDT.Text,
                     DiaChi = txtDiaChi.Text,
-                    MaPhongBan = string.IsNullOrEmpty(txtMaPhongBan.Text) ? (int?)null : int.Parse(txtMaPhongBan.Text),
-                    MaChucVu = string.IsNullOrEmpty(txtMaChucVu.Text) ? (int?)null : int.Parse(txtMaChucVu.Text),
+                    MaPhongBan = int.Parse(txtMaPhongBan.Text),
+                    MaChucVu = int.Parse(txtMaChucVu.Text),
                     NgayVaoLam = dtpNgayVaoLam.Value,
-                    Email = txtEmail.Text
+                    Email = txtEmail.Text,
+                    AvatarPath = ptrAvatar.Tag?.ToString()
                 };
 
-                // Thêm nhân viên vào DbContext và lưu vào cơ sở dữ liệu
-                dbContext.NhanVien.Add(nv);
-                dbContext.SaveChanges();
-
+                nhanVienBUS.ThemNhanVien(nv);
                 MessageBox.Show("Thêm nhân viên thành công!");
-
-                // Cập nhật lại DataGridView trong form chính
-                formChinh.LoadData();
-
-                // Xóa lỗi và thông tin nhập
-                ClearForm();
+                this.DialogResult = DialogResult.OK; // Trả về OK để form chính biết là đã thêm thành công
+                this.Close();
             }
             catch (Exception ex)
             {
@@ -116,7 +109,6 @@ namespace QLNhanVien
 
         private void ClearForm()
         {
-            // Xóa trắng các ô nhập liệu sau khi thêm nhân viên
             txtMaNV.Clear();
             txtHoTen.Clear();
             dtpNgaySinh.Value = DateTime.Now;
@@ -165,6 +157,29 @@ namespace QLNhanVien
             else
             {
                 err.SetError(txtSDT, "");
+            }
+        }
+
+        private void pnThongTin_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void ptrAvatar_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnThemHinhAnh_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp";
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    ptrAvatar.Image = Image.FromFile(openFileDialog.FileName);
+                    ptrAvatar.Tag = openFileDialog.FileName;
+                }
             }
         }
     }
