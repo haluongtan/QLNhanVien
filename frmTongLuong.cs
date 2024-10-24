@@ -1,4 +1,4 @@
-﻿using OfficeOpenXml.Style;
+using OfficeOpenXml.Style;
 using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
@@ -65,19 +65,7 @@ namespace QLNhanVien
             dgvTongLuong.DataSource = danhSachTongLuongSauTruUng;
             dgvTongLuong.Columns["TongLuong"].DefaultCellStyle.Format = "N2";
         }
-        /*private decimal CalculateTotalSalary(decimal luongCoBan, int soNgayLamViecTrongThang, int soNgayDiLam, int soNgayDiTre, int soNgayNghiPhep, int soNgayKhongDiLam)
-        {
-            // Lương cho ngày làm đủ
-            decimal luongTheoNgay = luongCoBan / soNgayLamViecTrongThang;
-
-            // Lương thực tế
-            decimal luongThucTe = (soNgayDiLam * luongTheoNgay) +
-                                  (soNgayDiTre * luongTheoNgay * 0.95m) +  // Lương cho đi trễ, giảm 5%
-                                  (soNgayNghiPhep * luongTheoNgay) -       // Nghỉ phép tính như ngày làm đủ
-                                  (soNgayKhongDiLam * luongTheoNgay);      // Không đi làm, trừ lương
-
-            return luongThucTe;
-        }*/
+       
 
         private void btnXuatExcel_Click(object sender, EventArgs e)
         {
