@@ -25,23 +25,17 @@ namespace QLNhanVien
 
         private void frmThemHopDong_Load(object sender, EventArgs e)
         {
-            using (var dbContext = new Model1())
+            var nhanVienWithoutContracts = hopDongBUS.LayDanhSachNhanVienChuaCoHopDong();
+            var nhanVienToDisplay = nhanVienWithoutContracts.Select(nv => new
             {
-                var nhanVienWithoutContracts = (from nv in dbContext.NhanVien
-                                                where !(from hd in dbContext.HopDong
-                                                        select hd.MaNhanVien)
-                                                        .Contains(nv.MaNhanVien)
-                                                select new
-                                                {
-                                                    nv.MaNhanVien,
-                                                    nv.HoTen
-                                                }).ToList();
+                nv.MaNhanVien,
+                nv.HoTen
+            }).ToList();
 
-                dgvHopDong.DataSource = nhanVienWithoutContracts;
-                dgvHopDong.Columns["MaNhanVien"].HeaderText = "Mã Nhân Viên";
-                dgvHopDong.Columns["HoTen"].HeaderText = "Tên Nhân Viên";
-                dgvHopDong.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            }
+            dgvHopDong.DataSource = nhanVienToDisplay;
+            dgvHopDong.Columns["MaNhanVien"].HeaderText = "Mã Nhân Viên";
+            dgvHopDong.Columns["HoTen"].HeaderText = "Tên Nhân Viên";
+            dgvHopDong.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         }
 
         private void dgvHopDong_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -71,13 +65,6 @@ namespace QLNhanVien
 
                 hopDongBUS.ThemHopDong(newContract);
                 MessageBox.Show("Hợp đồng đã được thêm thành công!");
-
-                // Cập nhật lại form frmHopDong nếu nó đang mở
-                frmHopDong parentForm = (frmHopDong)Application.OpenForms["frmHopDong"];
-                if (parentForm != null)
-                {
-                    parentForm.RefreshGrid();
-                }
             }
             else
             {
