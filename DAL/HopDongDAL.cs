@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -26,7 +26,15 @@ namespace DAL
                                }).ToList<object>();
             return hopDongData;
         }
-
+        public List<NhanVien> LayDanhSachNhanVienChuaCoHopDong()
+        {
+            var nhanVienWithoutContracts = (from nv in dbContext.NhanVien
+                                            where !(from hd in dbContext.HopDong
+                                                    select hd.MaNhanVien)
+                                                    .Contains(nv.MaNhanVien)
+                                            select nv).ToList();
+            return nhanVienWithoutContracts;
+        }
         public HopDong LayHopDongTheoMa(int maHopDong)
         {
             return dbContext.HopDong.FirstOrDefault(hd => hd.MaHopDong == maHopDong);
