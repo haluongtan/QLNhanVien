@@ -45,7 +45,7 @@ namespace QLNhanVien
                 dgvNhanVien.Columns.Add("AvatarPath", "Avatar Path");
             }
 
-            dgvNhanVien.Columns["AvatarPath"].Visible = false; // Để tránh hiện đường dẫn hình ảnh trên lưới
+            dgvNhanVien.Columns["AvatarPath"].Visible = false; 
 
             if (dgvNhanVien.Rows.Count > 0)
             {
@@ -165,7 +165,7 @@ namespace QLNhanVien
 
         private void btnThem_Click(object sender, EventArgs e)
         {
-            frmThemNhanVien themNV = new frmThemNhanVien(); // Không cần truyền dbContext
+            frmThemNhanVien themNV = new frmThemNhanVien();
             var result = themNV.ShowDialog();
 
             if (result == DialogResult.OK)
@@ -180,6 +180,11 @@ namespace QLNhanVien
                     if (frmChamCong != null)
                     {
                         frmChamCong.AddNhanVienToChamCong(nhanVienMoi.MaNhanVien, nhanVienMoi.HoTen);
+                    }
+                    frmHopDong frmHopDong = Application.OpenForms.OfType<frmHopDong>().FirstOrDefault();
+                    if (frmHopDong != null)
+                    {
+                        frmHopDong.RefreshGrid(); // Cập nhật lại bảng hợp đồng với nhân viên mới
                     }
                 }
             }
