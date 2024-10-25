@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,6 +14,10 @@ namespace BUS
         public List<dynamic> LayDanhSachHopDong()
         {
             return hopDongDAL.LayDanhSachHopDong();
+        }
+        public List<NhanVien> LayDanhSachNhanVienChuaCoHopDong()
+        {
+            return hopDongDAL.LayDanhSachNhanVienChuaCoHopDong();
         }
 
         // Thêm hợp đồng mới
