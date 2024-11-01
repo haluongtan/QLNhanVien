@@ -76,10 +76,8 @@ namespace QLNhanVien
             {
                 // Vô hiệu hóa các nút lưu và xóa để nhân viên không thể chỉnh sửa
                 btnLuu.Enabled = false;
-                btnXoaChamCong.Enabled = false;
                 dgvChamCong.ReadOnly = true;
                 btnTinhLuongThang.Visible = false;
-                btnPhucHoiNhanVien.Visible = false;
             }
         }
 
@@ -157,23 +155,7 @@ namespace QLNhanVien
 
         }
 
-        private void btnXoaChamCong_Click(object sender, EventArgs e)
-        {
-            if (dgvChamCong.CurrentRow != null && dgvChamCong.CurrentRow.Cells["MaNhanVien"].Value != null)
-            {
-                int maNhanVien = Convert.ToInt32(dgvChamCong.CurrentRow.Cells["MaNhanVien"].Value);
-                DateTime selectedDate = dtpNgay.Value.Date;
-
-                chamCongBUS.XoaChamCong(maNhanVien, selectedDate);
-                LoadChamCongData();
-
-                MessageBox.Show("Đã xóa chấm công của nhân viên thành công.");
-            }
-            else
-            {
-                MessageBox.Show("Vui lòng chọn một nhân viên để xóa chấm công.");
-            }
-        }
+        
 
         private void dgvChamCong_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -190,18 +172,7 @@ namespace QLNhanVien
             frm.TinhLuongThang();
         }
 
-        private void btnPhucHoiNhanVien_Click(object sender, EventArgs e)
-        {
-            DateTime selectedDate = dtpNgay.Value.Date;
-            var nhanVienChuaChamCong = chamCongBUS.LayDanhSachNhanVienChuaChamCong(selectedDate);
-
-            foreach (var nv in nhanVienChuaChamCong)
-            {
-                dgvChamCong.Rows.Add(nv.MaNhanVien, nv.HoTen, "Đi Làm");
-            }
-            MessageBox.Show("Đã thêm lại các nhân viên chưa có chấm công.", "Thông báo");
-        }
-
+  
         private void btnThoat_Click(object sender, EventArgs e)
         {
             this.Close();
