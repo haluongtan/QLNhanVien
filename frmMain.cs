@@ -171,7 +171,7 @@ namespace QLNhanVien
             if (result == DialogResult.OK)
             {
                 LoadData();
-                var nhanVienMoi = dbContext.NhanVien.ToList().LastOrDefault();
+                var nhanVienMoi = dbContext.NhanVien.ToList().LastOrDefault(); 
 
                 if (nhanVienMoi != null)
                 {
@@ -181,11 +181,7 @@ namespace QLNhanVien
                     {
                         frmChamCong.AddNhanVienToChamCong(nhanVienMoi.MaNhanVien, nhanVienMoi.HoTen);
                     }
-                    frmHopDong frmHopDong = Application.OpenForms.OfType<frmHopDong>().FirstOrDefault();
-                    if (frmHopDong != null)
-                    {
-                        frmHopDong.RefreshGrid(); // Cập nhật lại bảng hợp đồng với nhân viên mới
-                    }
+                   
                 }
             }
         }
@@ -242,6 +238,11 @@ namespace QLNhanVien
         private void btnThoat_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void pnThongTin_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }
