@@ -88,5 +88,17 @@ namespace QuanLyNhanSu
         {
             this.Close();
         }
+
+        private void quảnLýTàiKhoảnToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            frmQuanLyTk frmQuanLyTk = new frmQuanLyTk();
+            OpenChildForm(frmQuanLyTk);
+        }
+
+        private void đăngNhậpToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            frmLogin frmLogin = new frmLogin();
+            OpenChildForm(frmLogin);
+        }
     }
 }
