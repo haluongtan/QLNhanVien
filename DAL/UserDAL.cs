@@ -1,4 +1,4 @@
-﻿using DAL.Entities;
+using DAL.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +19,7 @@ namespace DAL
         public Users GetUserByUsernameAndPassword(string username, string password)
         {
             return dbContext.Users.FirstOrDefault(u => u.Username == username && u.Password == password);
-        }
+        }   
         public List<Users> LayDanhSachTaiKhoan()
         {
             return dbContext.Users.ToList();
@@ -54,7 +54,10 @@ namespace DAL
             var user = dbContext.Users.FirstOrDefault(u => u.Username == username);
             return user != null ? user.UserId : 0;
         }
-
+        public bool KiemTraTenTaiKhoan(string username)
+        {
+            return dbContext.Users.Any(u => u.Username == username);
+        }
 
     }
 }
