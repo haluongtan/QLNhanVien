@@ -1,4 +1,4 @@
-﻿using BUS;
+using BUS;
 using DAL.Entities;
 using System;
 using System.Collections.Generic;
@@ -25,7 +25,7 @@ namespace QuanLyNhanSu
         private void LoadQuyenComboBox()
         {
             cmbQuyen.Items.Add("admin");
-            cmbQuyen.Items.Add("nhanVien");
+            cmbQuyen.Items.Add("nhanvien");
             cmbQuyen.SelectedIndex = 0; 
         }
         private void frmThemTaiKhoan_Load(object sender, EventArgs e)
@@ -40,7 +40,11 @@ namespace QuanLyNhanSu
                 MessageBox.Show("Vui lòng nhập đầy đủ thông tin!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-
+            if (taiKhoanBUS.KiemTraTenTaiKhoan(txtTenDN.Text.Trim()))
+            {
+                MessageBox.Show("Tên đăng nhập đã tồn tại! Vui lòng chọn tên khác.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
             Users taiKhoanMoi = new Users
             {
                 Username = txtTenDN.Text.Trim(),
