@@ -1,4 +1,4 @@
-﻿using DAL;
+using DAL;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,7 +38,10 @@ namespace BUS
         {
             userDAL.XoaTaiKhoan(username);
         }
-       
+        public bool KiemTraTenTaiKhoan(string username)
+        {
+            return userDAL.KiemTraTenTaiKhoan(username);
+        }
 
     }
 }
